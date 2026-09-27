@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HyperStore POS Pro | Caisse Multi-Rayons & SmartStock AI</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Canvas for celebration confetti -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Toast Notifications Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Header / Navigation -->
+  <header class="navbar">
+    <div class="nav-left">
+      <div class="logo-box">
+        <span class="logo-icon">🏪</span>
+      </div>
+      <div>
+        <div class="brand-row">
+          <h1>HyperStore <span class="pro-badge">PRO</span></h1>
+        </div>
+        <p class="tagline">Caisse Multi-Rayons (High-Tech, Électroménager, Frais, Meubles)</p>
+      </div>
+    </div>
+
+    <!-- Quick Stats & Actions -->
+    <div class="nav-stats">
+      <div class="stat-pill revenue-pill">
+        <span class="stat-icon">💰</span>
+        <div>
+          <span class="stat-label">Chiffre d'Affaires</span>
+          <span class="stat-value" id="total-revenue">0.000 DT</span>
+        </div>
+      </div>
+      <div class="stat-pill orders-pill">
+        <span class="stat-icon">🧾</span>
+        <div>
+          <span class="stat-label">Commandes</span>
+          <span class="stat-value" id="total-sales-count">0</span>
+        </div>
+      </div>
+
+      <!-- SmartStock AI Nav Button -->
+      <button id="btn-smartstock" class="btn-ai-nav" title="Ouvrir SmartStock AI - Analyse & Prédiction de Stock">
+        <span class="ai-sparkle">🧠</span>
+        <span class="ai-btn-text">SmartStock AI</span>
+        <span class="badge-ai-alert" id="ai-alert-count">0</span>
+      </button>
+
+      <button id="btn-clients" class="btn-nav" title="Voir la liste des clients et fidélité">
+        <span class="btn-icon-wrap">👥</span>
+        <span>Clients</span>
+        <span class="badge-count" id="clients-count-badge">0</span>
+      </button>
+      <button id="btn-history" class="btn-nav" title="Voir l'historique des ventes">
+        <span class="btn-icon-wrap">📋</span>
+        <span>Historique</span>
+      </button>
+      <button id="btn-add-product" class="btn-primary-gradient" title="Ajouter un nouveau produit">
+        <span>➕</span> Produit
+      </button>
+    </div>
+  </header>
+
+  <!-- Main POS Workspace -->
+  <main class="pos-layout">
+    <!-- Products Catalog (Left side) -->
+    <section class="catalog-section">
+      <!-- Search & Categories Bar -->
+      <div class="catalog-header">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="Rechercher par nom (ex: clavier, tomate, air fryer, chaise, ps5, pomme...)" autocomplete="off">
+          <span class="search-shortcut">⌘K</span>
+        </div>
+
+        <!-- Filter Rayons / Types -->
+        <div class="categories-bar" id="categories-bar">
+          <button class="cat-pill active" data-category="all">
+            <span class="cat-dot"></span>Tous les rayons
+          </button>
+          <button class="cat-pill" data-category="Informatique">
+            <span>💻</span> Informatique
+          </button>
+          <button class="cat-pill" data-category="Électroménager">
+            <span>⚡</span> Électroménager
+          </button>
+          <button class="cat-pill" data-category="Légumes">
+            <span>🥦</span> Légumes
+          </button>
+          <button class="cat-pill" data-category="Fruits">
+            <span>🍎</span> Fruits
+          </button>
+          <button class="cat-pill" data-category="Jeux">
+            <span>🎮</span> Jeux & Gaming
+          </button>
+          <button class="cat-pill" data-category="Meubles">
+            <span>🪑</span> Meubles
+          </button>
+          <button class="cat-pill" data-category="Accessoires">
+            <span>🎧</span> Accessoires
+          </button>
+          <button class="cat-pill" data-category="Alimentation">
+            <span>🥪</span> Alimentation & Boissons
+          </button>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="products-grid" id="products-grid">
+        <!-- Injected via JavaScript -->
+      </div>
+    </section>
+
+    <!-- Cart & Checkout (Right side) -->
+    <aside class="cart-section">
+      <div class="cart-header">
+        <div class="cart-title">
+          <div class="cart-icon-wrapper">🛒</div>
+          <div>
+            <h2>Panier en cours</h2>
+            <span class="cart-count-badge" id="cart-item-count">0 article</span>
+          </div>
+        </div>
+        <button id="btn-clear-cart" class="btn-clear-cart" title="Vider le panier">
+          <span>🗑️</span> Vider
+        </button>
+      </div>
+
+      <!-- Cart Items List -->
+      <div class="cart-items" id="cart-items">
+        <!-- Rendered by JS or Empty state -->
+      </div>
+
+      <!-- Cart Summary & Actions -->
+      <div class="cart-footer">
+        <!-- Client Identification & Loyalty info -->
+        <div class="client-input-group">
+          <div class="client-label-row">
+            <label for="client-name">👤 Client :</label>
+            <span class="loyalty-hint">Tapez pour vérifier la fidélité</span>
+          </div>
+          <div class="client-input-wrapper">
+            <input type="text" id="client-name" list="clients-datalist" placeholder="Tapez ou sélectionnez un client..." autocomplete="off">
+            <datalist id="clients-datalist">
+              <!-- Dynamically populated -->
+            </datalist>
+          </div>
+          <div id="client-loyalty-status" class="loyalty-status-banner" style="display: none;">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Remise Button -->
+        <div class="discount-control-box">
+          <button type="button" id="btn-loyalty-discount" class="btn-discount" disabled>
+            <span class="discount-gift-icon">🎁</span>
+            <span id="discount-btn-text">Remise 5ème Achat (-10%)</span>
+          </button>
+        </div>
+
+        <!-- Totals Breakdown -->
+        <div class="summary-breakdown">
+          <div class="summary-line">
+            <span>Sous-total HT</span>
+            <span id="cart-subtotal" class="subtotal-val">0.000 DT</span>
+          </div>
+
+          <div class="summary-line discount-line" id="discount-summary-line" style="display: none;">
+            <span class="discount-tag-line">
+              <span class="tag-sparkle">✨</span> Remise Fidélité (10%)
+            </span>
+            <span id="cart-discount-amount" class="discount-val">-0.000 DT</span>
+          </div>
+
+          <div class="summary-line total-line">
+            <div class="total-label-group">
+              <span>Total TTC</span>
+              <span class="currency-tag">TND</span>
+            </div>
+            <span id="cart-total" class="total-val">0.000 DT</span>
+          </div>
+        </div>
+
+        <button id="btn-checkout" class="btn-checkout" disabled>
+          <span class="checkout-icon">⚡</span>
+          <span>Valider & Encaisser</span>
+          <span class="checkout-shine"></span>
+        </button>
+      </div>
+    </aside>
+  </main>
+
+  <!-- MODAL: SmartStock AI Dashboard -->
+  <div class="modal-overlay" id="smartstock-modal">
+    <div class="modal-card modal-xlarge">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="modal-title-with-badge">
+          <div class="modal-icon-badge ai-icon-glow">🧠</div>
+          <div>
+            <h3>SmartStock AI — Analyse Prédictive & Réapprovisionnement Multi-Rayons</h3>
+            <p class="modal-sub">Optimisation continue par département (Informatique, Électroménager, Frais, Meubles...)</p>
+          </div>
+          <span class="badge-ai-model">IA Active • Prédictions en temps réel</span>
+        </div>
+        <button class="btn-close-modal" id="btn-close-smartstock-modal">✕</button>
+      </div>
+
+      <!-- Interactive Architecture Flow Diagram -->
+      <div class="ai-architecture-banner">
+        <div class="arch-step">
+          <span class="arch-badge">Entrées Données</span>
+          <p>Données Produits</p>
+          <small>Stock & Ventes</small>
+        </div>
+        <div class="arch-arrow">➔</div>
+        <div class="arch-step arch-engine">
+          <span class="arch-badge">Algorithme</span>
+          <p>⚡ Analyse IA</p>
+          <small>Vélocité & Délais</small>
+        </div>
+        <div class="arch-arrow">➔</div>
+        <div class="arch-step arch-factors">
+          <span class="arch-badge">Variables</span>
+          <p>Stock • Ventes • Délais • Commandes</p>
+        </div>
+        <div class="arch-arrow">➔</div>
+        <div class="arch-step arch-output">
+          <span class="arch-badge">SmartStock AI</span>
+          <p>💡 Recommandations Proactives</p>
+          <small>Quantité, Fournisseur, Date</small>
+        </div>
+      </div>
+
+      <!-- AI KPIs & Overview Cards -->
+      <div class="ai-metrics-grid">
+        <div class="ai-kpi-card alert-kpi">
+          <div class="kpi-icon">⚠️</div>
+          <div>
+            <span class="kpi-label">Bientôt Épuisés / Ruptures</span>
+            <span class="kpi-value" id="ai-kpi-critical">0 article</span>
+          </div>
+        </div>
+        <div class="ai-kpi-card recommend-kpi">
+          <div class="kpi-icon">📦</div>
+          <div>
+            <span class="kpi-label">Quantité Totale Recommandée</span>
+            <span class="kpi-value" id="ai-kpi-reorder-qty">0 unités</span>
+          </div>
+        </div>
+        <div class="ai-kpi-card budget-kpi">
+          <div class="kpi-icon">💰</div>
+          <div>
+            <span class="kpi-label">Budget Réassort Estimé</span>
+            <span class="kpi-value" id="ai-kpi-budget">0.000 DT</span>
+          </div>
+        </div>
+        <div class="ai-kpi-card incoming-kpi">
+          <div class="kpi-icon">🚚</div>
+          <div>
+            <span class="kpi-label">Commandes en Transit</span>
+            <span class="kpi-value" id="ai-kpi-incoming">0 en cours</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter Tabs in SmartStock -->
+      <div class="smartstock-controls">
+        <div class="smartstock-tabs">
+          <button class="stock-tab-btn active" data-tab="all">Tous les articles</button>
+          <button class="stock-tab-btn" data-tab="alerts">⚠️ Alertes & Ruptures (<span id="tab-alerts-count">0</span>)</button>
+          <button class="stock-tab-btn" data-tab="incoming">🚚 Commandes en Transit (<span id="tab-incoming-count">0</span>)</button>
+        </div>
+        <input type="text" id="smartstock-search" placeholder="Filtrer par article, rayon ou fournisseur..." class="smartstock-search-input">
+      </div>
+
+      <!-- SmartStock Recommendations Table -->
+      <div class="history-content custom-scrollbar smartstock-table-wrap">
+        <table class="history-table smartstock-table">
+          <thead>
+            <tr>
+              <th>Article & Rayon</th>
+              <th>Stock Actuel</th>
+              <th>Ventes Précédentes</th>
+              <th>Délais Fournisseur</th>
+              <th>Commandes en cours</th>
+              <th>⚠️ Alerte Statut</th>
+              <th>📦 Qté Recommandée</th>
+              <th>🚚 Fournisseur Conseillé</th>
+              <th>📅 Quand Commander ?</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="smartstock-table-body">
+            <!-- Dynamically populated by app.js -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-actions">
+        <button id="btn-refresh-ai" class="btn-secondary" title="Recalculer les prédictions">🔄 Relancer l'Analyse IA</button>
+        <button id="btn-close-smartstock" class="btn-primary-gradient">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Receipt / Ticket de Caisse -->
+  <div class="modal-overlay" id="receipt-modal">
+    <div class="modal-card receipt-card">
+      <div class="receipt-printable" id="printable-receipt">
+        <div class="receipt-top">
+          <div class="receipt-logo">🏪</div>
+          <h3>HYPERSTORE PRO</h3>
+          <p class="receipt-store">Multi-Rayons & Électronique</p>
+          <p class="receipt-date" id="receipt-date">--/--/---- --:--</p>
+          <p class="receipt-client" id="receipt-client">Client: Comptant</p>
+          <p class="receipt-loyalty" id="receipt-loyalty" style="display: none;">⭐ Client Fidèle : 5ème Achat !</p>
+        </div>
+        <div class="receipt-divider">================================</div>
+        <div class="receipt-table" id="receipt-table">
+          <!-- Items lines -->
+        </div>
+        <div class="receipt-divider">================================</div>
+        <div class="receipt-subtotal-row" id="receipt-subtotal-row" style="display: none;">
+          <span>Sous-total:</span>
+          <span id="receipt-subtotal">0.000 DT</span>
+        </div>
+        <div class="receipt-discount-row" id="receipt-discount-row" style="display: none;">
+          <span>Remise Fidélité (10%):</span>
+          <span id="receipt-discount">-0.000 DT</span>
+        </div>
+        <div class="receipt-total-row">
+          <span>NET À PAYER :</span>
+          <strong id="receipt-total">0.000 DT</strong>
+        </div>
+        <div class="receipt-divider">================================</div>
+        <div class="receipt-footer">
+          <p>Merci pour vos achats chez HyperStore ! 🙏</p>
+          <p class="receipt-barcode">||| | ||||| || |||| |||| ||| ||</p>
+          <p class="receipt-sub-footer">Ticket de caisse officiel</p>
+        </div>
+      </div>
+
+      <div class="modal-actions no-print">
+        <button id="btn-print-receipt" class="btn-primary-gradient">🖨️ Imprimer le Ticket</button>
+        <button id="btn-close-receipt" class="btn-secondary">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Clients & Programme Fidélité -->
+  <div class="modal-overlay" id="clients-modal">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <div class="modal-title-with-badge">
+          <div class="modal-icon-badge">👥</div>
+          <div>
+            <h3>Programme de Fidélité Clients</h3>
+            <p class="modal-sub">Suivi des achats multi-rayons et remises</p>
+          </div>
+          <span class="badge-loyalty-info">🎁 5ème achat = Remise 10% Offerte</span>
+        </div>
+        <button class="btn-close-modal" id="btn-close-clients-modal">✕</button>
+      </div>
+
+      <div class="clients-search-bar">
+        <span class="input-icon">🔍</span>
+        <input type="text" id="clients-search-input" placeholder="Rechercher par nom de client ou identifiant (ex: CL-101)...">
+      </div>
+
+      <div class="history-content custom-scrollbar">
+        <table class="history-table clients-table">
+          <thead>
+            <tr>
+              <th>ID Client</th>
+              <th>Nom du Client</th>
+              <th>Achats Effectués</th>
+              <th>Articles Achetés (Historique)</th>
+              <th>Total Dépensé</th>
+              <th>Statut Remise</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="clients-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+        <div id="clients-empty" class="empty-state">
+          <div class="empty-icon-box">👥</div>
+          <h4>Aucun client enregistré pour l'instant</h4>
+          <p>Dès qu'un client achète un panier, il est automatiquement enregistré ici avec son historique !</p>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-close-clients" class="btn-secondary">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: New Product -->
+  <div class="modal-overlay" id="product-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-with-badge">
+          <div class="modal-icon-badge">✨</div>
+          <div>
+            <h3>Nouveau Produit</h3>
+            <p class="modal-sub">Ajouter un article et configurer son rayon & stock</p>
+          </div>
+        </div>
+        <button class="btn-close-modal" id="btn-close-product-modal">✕</button>
+      </div>
+      <form id="new-product-form" class="modal-form">
+        <div class="form-group">
+          <label for="prod-name">Nom de l'article :</label>
+          <input type="text" id="prod-name" placeholder="Ex: Clavier, Tomates, Air Fryer, Chaise, PS5..." required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="prod-price">Prix de vente (en DT) :</label>
+            <input type="number" step="0.100" min="0" id="prod-price" placeholder="Ex: 45.000" required>
+          </div>
+          <div class="form-group">
+            <label for="prod-category">Rayon / Type :</label>
+            <select id="prod-category">
+              <option value="Informatique">💻 Informatique</option>
+              <option value="Électroménager">⚡ Électroménager</option>
+              <option value="Légumes">🥦 Légumes</option>
+              <option value="Fruits">🍎 Fruits</option>
+              <option value="Jeux">🎮 Jeux & Gaming</option>
+              <option value="Meubles">🪑 Meubles</option>
+              <option value="Accessoires">🎧 Accessoires</option>
+              <option value="Alimentation">🥪 Alimentation & Boissons</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="prod-stock">Stock initial disponible :</label>
+            <input type="number" min="0" id="prod-stock" placeholder="Ex: 15" value="10" required>
+          </div>
+          <div class="form-group">
+            <label for="prod-supplier">Fournisseur :</label>
+            <input type="text" id="prod-supplier" placeholder="Ex: Grossiste Central Tunis" value="Grossiste Central">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="prod-icon">Icône / Emoji représentatif :</label>
+          <input type="text" id="prod-icon" placeholder="Ex: 💻, 🥦, ⚡, 🍎, 🎮, 🪑, 🎧" value="📦">
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary-gradient">Enregistrer l'Article</button>
+          <button type="button" class="btn-secondary" id="btn-cancel-product">Annuler</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Sales History -->
+  <div class="modal-overlay" id="history-modal">
+    <div class="modal-card modal-large">
+      <div class="modal-header">
+        <div class="modal-title-with-badge">
+          <div class="modal-icon-badge">📋</div>
+          <div>
+            <h3>Historique Complet des Ventes</h3>
+            <p class="modal-sub">Registre des transactions de tous les rayons</p>
+          </div>
+        </div>
+        <button class="btn-close-modal" id="btn-close-history-modal">✕</button>
+      </div>
+      <div class="history-content custom-scrollbar">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>N° Vente</th>
+              <th>Date & Heure</th>
+              <th>Client (ID)</th>
+              <th>Articles Détaillés</th>
+              <th>Remise</th>
+              <th>Total Payé</th>
+            </tr>
+          </thead>
+          <tbody id="history-table-body">
+            <!-- Injected by JS -->
+          </tbody>
+        </table>
+        <div id="history-empty" class="empty-state">
+          <div class="empty-icon-box">🧾</div>
+          <h4>Aucune vente enregistrée</h4>
+          <p>Les tickets validés apparaîtront ici avec tous leurs détails.</p>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button id="btn-reset-history" class="btn-danger-outline">🗑️ Réinitialiser l'historique</button>
+        <button id="btn-close-history" class="btn-secondary">Fermer</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
